@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- basic -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- mobile metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <!-- site metas -->
+    <title>4uhost</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- bootstrap css -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <!-- style css -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- Responsive-->
+    <link rel="stylesheet" href="/css/responsive.css">
+    <!-- fevicon -->
+    <link rel="icon" href="/images/fevicon.png" type="image/gif" />
+    <!-- Tweaks for older IEs-->
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=6d59f528d7b8ee26eb605596fe190b25&libraries=services"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://www.google.com/speech-api/js/samplepush-bef50/client.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+
+    <style>
+
+        @import url('https://fonts.google.com/specimen/Black+Han+Sans?subset=korean&noto.script=Kore');
+
+        p{
+            font-family: 'Black Han Sans', sans-serif;
+            color:white;
+            font-size: 50px;
+        }
+
+    </style>
+
+
+
+
+<!-- body -->
+<!-- end header inner -->
+<!-- about -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<script src="https://www.google.com/speech-api/js/samplepush-bef50/client.js"></script>
+
+
+<script src="server.js"></script>
+<script>
+
+    const socket = io();
+
+    function resultData() {
+        // 클릭 이벤트 발생 시 버튼의 배경색을 변경하는 로직
+        var button = document.getElementById('startButton');
+        button.style.backgroundColor = '#ff0000'; // 새로운 배경색으로 변경
+        // WebSocket 클라이언트 생성
+
+
+        // 예약 정보 수신 처리
+        socket.on('reservation', (data) => {
+            // 받은 예약 정보를 파싱하고 알림을 표시하는 로직을 구현
+            const reservationList = document.getElementById('reservationList');
+            const reservationElement = document.createElement('p');
+            reservationElement.textContent = `출발지: ${data.Start}, 도착지: ${data.End}, 버스 번호: ${data.busNum}`;
+            reservationList.appendChild(reservationElement);
+            var result = confirm('사용자 : 빵빵이\n' + `출발지: ${data.Start},\n 도착지: ${data.End},\n 버스 번호: ${data.busNum} 예약하였습니다. 승인하시겠습니까?`);
+            if (result) {
+                const resultData = {
+                    Start: data.Start,
+                    End: data.End,
+                    busNum: data.busNum,
+                    result: "승인 완료"
+                };
+                console.log('승인 요청:', resultData);
+
+                // 예약 승인 요청을 서버로 전송
+                socket.emit('approveReservation', resultData);
+                alert("승인이 완료되었습니다!");
+                const textToSpeak = `교통약자가 ${data.Start} 정류장에서 탑승 예정입니다. 탑승객분들은 좌석을 비켜주세요!`;
+
+// SpeechSynthesisUtterance 객체를 생성하고 텍스트를 설정합니다.
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+
+// 음성 합성을 위한 SpeechSynthesis 객체를 가져옵니다.
+                const synth = window.speechSynthesis;
+
+// SpeechSynthesisUtterance를 읽도록 지시합니다.
+                synth.speak(utterance);
+                // 예약 승인 요청
+            } else {
+                const resultData = {
+                    Start: data.Start,
+                    End: data.End,
+                    busNum: data.busNum,
+                    result: "승인 거부"
+                };
+                console.log('승인 거부:', resultData);
+
+                // 예약 승인 요청을 서버로 전송
+                socket.emit('approveReservation', resultData);// 예약 승인 요청
+                alert("승인이 거부되었습니다!");
+            }
+
+        });
+    }
+
+    // 예약 승인 요청 처리
+
+
+</script>
+<!-- end footer -->
+<!-- Javascript files-->
+<script src="/js/jquery.min.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<!-- sidebar -->
+<script src="/js/custom.js"></script>
+</head>
+<body class="main-layout inner_page">
+<!-- loader  -->
+<div class="loader_bg">
+    <div class="loader"><img src="/images/loading.gif" alt="#"/></div>
+</div>
+<!-- end loader -->
+<!-- header -->
+<div class="header">
+    <div class="container">
+        <div class="row d_flex">
+            <div class=" col-md-2 col-sm-3 col logo_section">
+                <div class="full">
+                    <div class="center-desk">
+                        <div class="logo">
+                            <a href="/"><img src="/images/logo.png" alt="#" /></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8 col-sm-12">
+                <p>기사 페이지</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<button id='startButton' onclick="resultData()">버스 운행 시작</button>
+<div id="reservationList"></div>
+
+<!-- end about -->
+<!--  footer -->
+<footer>
+</footer>
+
+
+</body>
+</html>

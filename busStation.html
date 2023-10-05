@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- basic -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- mobile metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <!-- site metas -->
+    <title>버스 예약 하기 페이지 </title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- bootstrap css -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <!-- style css -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- Responsive-->
+    <link rel="stylesheet" href="/css/responsive.css">
+    <!-- fevicon -->
+    <link rel="icon" href="/images/fevicon.png" type="image/gif"/>
+    <!-- Tweaks for older IEs-->
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+    <!-- Javascript files-->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <!-- sidebar -->
+    <script src="/js/custom.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=6d59f528d7b8ee26eb605596fe190b25&libraries=services"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://www.google.com/speech-api/js/samplepush-bef50/client.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+    <script>
+        //---------------Page 로딩시 html Geolocation (위도 ,경도 데이터 ) 넘겨주는 Method----------
+        function geolocationData() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(requestData);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        //500m 내에 근접 정류소 리스트 가까운 거리순으로 정렬 table
+        //500m 내에 근접 정류소 리스트 가까운 거리순으로 정렬 table
+        //--------------------------주변 정류장 목록 조회 (500M) Start-------------------------
+        function requestData(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+
+            var xhr1 = new XMLHttpRequest();
+            var url = 'https://apis.data.go.kr/1613000/BusSttnInfoInqireService/getCrdntPrxmtSttnList'; /*URL*/
+
+
+            var queryParams = '?' + encodeURIComponent('serviceKey') + '=' + '4BqitnePMI85LNaRrU9Cb1BjPByUQT5ahPiycrGnHMX7tvlyV8VN6ESZmUiA9Urhv2m%2BCzm37j63rQHw%2FP1Wpg%3D%3D'; /*Service Key*/
+            queryParams += '&' + encodeURIComponent('pageNo') + '=' + encodeURIComponent('1'); /**/
+            queryParams += '&' + encodeURIComponent('numOfRows') + '=' + encodeURIComponent('10'); /**/
+            queryParams += '&' + encodeURIComponent('_type') + '=' + encodeURIComponent('json'); /**/
+            queryParams += '&' + encodeURIComponent('gpsLati') + '=' + encodeURIComponent(latitude); /**/
+            queryParams += '&' + encodeURIComponent('gpsLong') + '=' + encodeURIComponent(longitude); /**/
+
+            xhr1.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 200) {
+                    var responseData = this.responseText;
+                    responseData = responseData.replace(/(<([^>]+)>)/ig, ""); // 응답 데이터에서 HTML 태그 제거
+                    var parseData = JSON.parse(responseData);
+                    handleData(parseData, latitude, longitude);
+                }
+            };
+
+            xhr1.open('GET', url + queryParams, true);
+            xhr1.send();
+        }
+
+        function handleData(parseData, latitude, longitude) {
+            var tbody = document.getElementById('busStationBody');
+
+            if (Array.isArray(parseData.response.body.items.item)) {
+                var items = parseData.response.body.items.item;
+
+                // 정류소까지의 거리 계산
+                items.forEach(function (item) {
+                    var itemLatitude = parseFloat(item.gpslati);
+                    var itemLongitude = parseFloat(item.gpslong);
+                    var distance = calculateDistance(latitude, longitude, itemLatitude, itemLongitude);
+
+                    item.distance = distance; // 거리 정보 추가
+                });
+
+                // 거리를 오름차순으로 정렬
+                items.sort(function (a, b) {
+                    return a.distance - b.distance;
+                });
+
+                // 테이블에 정류소 정보 표시
+                items.forEach(function (item) {
+                    if (item.nodeid.startsWith("DGB")) { // DGB로 시작하는 데이터만 선택
+                        var Item1 = item;
+                        var nodenm1 = item.nodenm;
+                        var distance = item.distance.toFixed(2) + 'm';
+                        var nodeid1 = item.nodeid;
+                        const stationNameLink = document.createElement('button');
+
+                        stationNameLink.style.backgroundColor = "transparent";
+
+                        var row = document.createElement('tr');
+                        var cell1 = document.createElement('td');
+                        var cell2 = document.createElement('td');
+                        var cell3 = document.createElement('td');
+                        var cell4 = document.createElement('td');
+
+
+                        cell1.style.backgroundColor = "skyblue";
+                        cell1.style.fontWeight = "bold"; // 글씨를 굵게 설정
+                        cell1.style.color = "black"; // 글씨 색상을 검은색으로 설정
+
+
+                        stationNameLink.textContent = "선택";
+                        stationNameLink.href = "#1";
+                        stationNameLink.addEventListener('click', function () {
+                            // document.getElementById('test').innerText = Item.nodeid;
+                            var NodeId = Item1.nodeid;
+                            lowbusStation(NodeId);
+                        });
+
+
+                        cell1.textContent = nodenm1;
+                        cell2.textContent = distance;
+                        cell3.textContent = nodeid1;
+                        cell4.appendChild(stationNameLink);
+
+                        row.appendChild(cell1);
+                        row.appendChild(cell2);
+                        // row.appendChild(cell3);
+                        row.appendChild(cell4);
+                        tbody.appendChild(row);
+                    }
+                });
+            }
+        }
+
+
+        //현재 위치로 부터 정류장 거리 구하는 Method
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            var R = 6371; // 지구의 반경 (km)
+            var dLat = deg2rad(lat2 - lat1);
+            var dLon = deg2rad(lon2 - lon1);
+            var a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            var distance = R * c * 1000; // 미터로 변환
+            return distance;
+        }
+
+        function deg2rad(deg) {
+            return deg * (Math.PI / 180);
+        }
+
+        //--------------------------주변 정류장 목록 조회 (500M) End-------------------------
+
+
+        //--------------------------정류장 선택시 버스 도착 정보 조회 Start-------------------------
+
+        function lowbusStation(NodeId) {
+            document.getElementById('busStationBody').innerHTML = '';
+            document.getElementById('meter').textContent = '버스 유형';
+            document.getElementById('nodeId').textContent = '남은 정류장수';
+            var thead = document.getElementById('tableHead');
+
+            var th = document.getElementById('selectNm');
+            th.textContent = "노선번호";
+            thead.appendChild(th);
+
+            var th2 = document.createElement('th');
+            th2.textContent = "도착 예정 시간";
+            thead.appendChild(th2);
+
+            var th3 = document.createElement('th');
+            th3.textContent = "선택하기";
+            thead.appendChild(th3);
+
+
+            var nodeId = NodeId;
+            var xhr2 = new XMLHttpRequest();
+            var url2 = 'https://apis.data.go.kr/1613000/ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList'; /*URL*/
+
+
+            var queryParams = '?' + encodeURIComponent('serviceKey') + '=' + '4BqitnePMI85LNaRrU9Cb1BjPByUQT5ahPiycrGnHMX7tvlyV8VN6ESZmUiA9Urhv2m%2BCzm37j63rQHw%2FP1Wpg%3D%3D'; /*Service Key*/
+            queryParams += '&' + encodeURIComponent('pageNo') + '=' + encodeURIComponent('1'); /**/
+            queryParams += '&' + encodeURIComponent('numOfRows') + '=' + encodeURIComponent('10'); /**/
+            queryParams += '&' + encodeURIComponent('_type') + '=' + encodeURIComponent('json'); /**/
+            queryParams += '&' + encodeURIComponent('cityCode') + '=' + encodeURIComponent('22'); /**/
+            queryParams += '&' + encodeURIComponent('nodeId') + '=' + encodeURIComponent(nodeId); /**/
+
+            xhr2.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 200) {
+                    var responseData = this.responseText;
+
+                    responseData = responseData.replace(/(<([^>]+)>)/ig, ""); // 응답 데이터에서 HTML 태그 제거
+                    var parseData = JSON.parse(responseData);
+
+                    // document.getElementById('test').textContent = parseData.response.body.items.item[0];
+                    lowbusParse(parseData);
+
+
+                }
+
+            }
+            xhr2.open('GET', url2 + queryParams, true);
+            xhr2.send();
+
+
+        }
+
+
+        function lowbusParse(parseData) {
+            var tbody = document.getElementById('busStationBody');
+            if (Array.isArray(parseData.response.body.items.item)) {
+                var items = parseData.response.body.items.item;
+
+                items = items.filter(function (item) {
+                    return item.vehicletp === '저상버스';
+                });
+                // Convert time from seconds to minutes
+                items.forEach(function (item) {
+                    item.arrtime = Math.floor(item.arrtime / 60); // Convert seconds to minutes
+                });
+                items.sort(function (a, b) {
+                    return a.arrtime - b.arrtime; // arrtime을 기준으로 오름차순 정렬
+                });
+                // 테이블에 정류소 정보 표시
+                items.forEach(function (item) {
+
+                    var nodenm = item.nodenm;
+                    var vehicletp = item.vehicletp;
+                    var arrprevstationcnt = item.arrprevstationcnt;
+                    var routeno = item.routeno;
+                    var arrtime = item.arrtime;
+
+                    var endStationLink = document.createElement('button');
+                    endStationLink.style.backgroundColor = "transparent";
+
+
+                    var row = document.createElement('tr');
+                    var cell1 = document.createElement('td');
+                    var cell2 = document.createElement('td');
+                    var cell3 = document.createElement('td');
+                    var cell4 = document.createElement('td');
+                    var cell5 = document.createElement('td');
+                    var cell6 = document.createElement('td');
+
+                    cell3.style.backgroundColor = "skyblue";
+                    cell3.style.fontWeight = "bold"; // 글씨를 굵게 설정
+                    cell3.style.color = "black"; // 글씨 색상을 검은색으로 설정
+
+                    cell4.style.backgroundColor = "skyblue";
+                    cell4.style.fontWeight = "bold"; // 글씨를 굵게 설정
+                    cell4.style.color = "black"; // 글씨 색상을 검은색으로 설정
+
+                    cell5.style.backgroundColor = "skyblue";
+                    cell5.style.fontWeight = "bold"; // 글씨를 굵게 설정
+                    cell5.style.color = "black"; // 글씨 색상을 검은색으로 설정
+
+
+                    endStationLink.textContent = "선택";
+                    endStationLink.href = "#2"
+                    endStationLink.addEventListener('click', function () {
+                        var routeId = item.routeid;
+                        var nodeNm = item.nodenm;
+                        var routeno = item.routeno;
+                        endStation(routeId, nodeNm, routeno);
+                    });
+
+
+                    cell1.textContent = nodenm;
+                    cell1.style.fontWeight = "bold"; // 글씨를 굵게 설정
+                    cell1.style.color = "black"; // 글씨 색상을 검은색으로 설정
+                    cell2.textContent = vehicletp;
+                    cell3.textContent = arrprevstationcnt;
+                    cell4.textContent = routeno;
+                    cell5.textContent = arrtime + "분";
+                    cell6.appendChild(endStationLink);
+
+
+                    row.appendChild(cell1);
+                    row.appendChild(cell2);
+                    row.appendChild(cell3);
+                    row.appendChild(cell4);
+                    row.appendChild(cell5);
+                    row.appendChild(cell6);
+                    tbody.appendChild(row);
+                });
+
+            }
+
+        }
+
+        //---------------------------------저상버스 도착 정보 조회 End---------------------------------------
+
+        //---------------------------------노선 경로 도착지 리스트  조회 End---------------------------------------
+        function endStation(routeId, nodeNm, routeno) {
+            document.getElementById('busStationBody').innerHTML = '';
+            document.getElementById('busStationHead').innerHTML = '';
+
+
+            var thead = document.getElementById('busStationHead');
+            var ttr = document.createElement('tr');
+            var th1 = document.createElement('th');
+            var th2 = document.createElement('th');
+            var th3 = document.createElement('th');
+            var th4 = document.createElement('th');
+
+            th1.textContent = '정류장 명';
+            th2.textContent = '정류소 순번';
+            th3.textContent = '상해행 구분';
+            th4.textContent = '선택하기';
+
+
+            ttr.appendChild(th1);
+            ttr.appendChild(th2);
+            ttr.appendChild(th3);
+            ttr.appendChild(th4);
+
+
+            thead.appendChild(ttr);
+
+
+            var Routeid = routeId;
+            var Nodenm = nodeNm;
+            var routeno = routeno;
+            var xhr3 = new XMLHttpRequest();
+            var url3 = 'https://apis.data.go.kr/1613000/BusRouteInfoInqireService/getRouteAcctoThrghSttnList'; /*URL*/
+
+
+            var queryParams = '?' + encodeURIComponent('serviceKey') + '=' + '4BqitnePMI85LNaRrU9Cb1BjPByUQT5ahPiycrGnHMX7tvlyV8VN6ESZmUiA9Urhv2m%2BCzm37j63rQHw%2FP1Wpg%3D%3D'; /*Service Key*/
+            queryParams += '&' + encodeURIComponent('numOfRows') + '=' + encodeURIComponent('100'); /**/
+            queryParams += '&' + encodeURIComponent('pageNo') + '=' + encodeURIComponent('1'); /**/
+            queryParams += '&' + encodeURIComponent('_type') + '=' + encodeURIComponent('json'); /**/
+            queryParams += '&' + encodeURIComponent('cityCode') + '=' + encodeURIComponent('22'); /**/
+            queryParams += '&' + encodeURIComponent('routeId') + '=' + encodeURIComponent(Routeid); /**/
+
+            xhr3.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 200) {
+                    var responseData = this.responseText;
+
+                    responseData = responseData.replace(/(<([^>]+)>)/ig, ""); // 응답 데이터에서 HTML 태그 제거
+
+                    var parseData = JSON.parse(responseData);
+                    endStationParse(parseData, Nodenm, routeno);
+
+
+                }
+
+            }
+            xhr3.open('GET', url3 + queryParams, true);
+            xhr3.send();
+        }
+
+        function endStationParse(parseData, Nodenm, routeno) {
+            var tbody = document.getElementById('busStationBody');
+
+            var startNode = Nodenm;
+            var routeNo = routeno;
+            var numCnt = 0;
+            if (Array.isArray(parseData.response.body.items.item)) {
+                numCnt++;
+
+                var items = parseData.response.body.items.item;
+                var startIndex = items.findIndex(function (item) {
+                    return item.nodenm === Nodenm;
+                });
+
+
+                var filteredItems = [];
+                items.forEach(function (item) {
+                    if (item.updowncd === 1) {
+                        item.updowncd = '↑'; // 화살표 위표시로 변경
+                        if (startIndex !== -1) {
+                            filteredItems = items.slice(0, startIndex + 1);
+                        }
+                    } else if (item.updowncd === 0) {
+                        item.updowncd = '↓'; // 화살표 아래표시로 변경
+                        if (startIndex !== -1) {
+                            filteredItems = items.slice(startIndex);
+                        }
+                    }
+                });
+
+                // 테이블에 정류소 정보 표시
+                filteredItems.forEach(function (item) {
+                    // var Item = itme;
+                    var nodenm3 = item.nodenm;
+                    var nodeord = item.nodeord;
+                    var updowncd = item.updowncd;
+
+
+                    var endStationLink = document.createElement('Button');
+                    endStationLink.style.backgroundColor = "transparent";
+
+                    var row = document.createElement('tr');
+                    var cell1 = document.createElement('td');
+                    var cell2 = document.createElement('td');
+                    var cell3 = document.createElement('td');
+                    var cell4 = document.createElement('td');
+
+                    cell1.style.backgroundColor = "skyblue";
+                    cell1.style.fontWeight = "bold"; // 글씨를 굵게 설정
+                    cell1.style.color = "black"; // 글씨 색상을 검은색으로 설정
+
+                    endStationLink.textContent = "선택";
+                    endStationLink.href = "#3"
+                    endStationLink.addEventListener('click', function () {
+                        var endNode = item.nodenm;
+                        resultPage(startNode, endNode, routeNo);
+                    });
+
+
+                    cell1.textContent = nodenm3;
+                    cell2.textContent = nodeord;
+                    cell3.textContent = updowncd;
+                    cell4.appendChild(endStationLink);
+
+
+                    row.appendChild(cell1);
+                    row.appendChild(cell2);
+                    row.appendChild(cell3);
+                    row.appendChild(cell4);
+
+
+                    tbody.appendChild(row);
+                });
+
+
+            }
+        }
+
+        //-------------------------Result Page --------------------
+
+        function resultPage(startNode, endNode, routeNo) {
+            document.getElementById('busStationBody').innerHTML = '';
+            document.getElementById('busStationHead').innerHTML = '';
+
+            var StartNode = startNode;
+            var EndNode = endNode;
+            var RouteNo = routeNo;
+
+
+            var tbody = document.getElementById('busStationBody');
+            var thead = document.getElementById('busStationHead');
+            var troot = document.getElementById('busStationTable');
+
+            var ttr = document.createElement('tr');
+            var th1 = document.createElement('th');
+            var th2 = document.createElement('th');
+            var th3 = document.createElement('th');
+            var th4 = document.createElement('th');
+
+            th1.textContent = "출발지";
+            th2.textContent = "도착지";
+            th3.textContent = "버스 노선";
+            th4.textContent = "예약 하기";
+
+            ttr.appendChild(th1);
+            ttr.appendChild(th2);
+            ttr.appendChild(th3);
+            ttr.appendChild(th4);
+
+            thead.appendChild(ttr);
+
+
+            var reservationData = document.createElement('Button');
+            reservationData.style.backgroundColor = "transparent";
+
+
+            var row = document.createElement('tr');
+            var cell1 = document.createElement('td');
+            var cell2 = document.createElement('td');
+            var cell3 = document.createElement('td');
+            var cell4 = document.createElement('td');
+
+
+            reservationData.textContent = "예약하기";
+            reservationData.href = "#4"
+            reservationData.addEventListener('click', function () {
+
+                makeReservation(StartNode, EndNode, RouteNo);
+                reseponse();
+            });
+
+            cell1.textContent = StartNode;
+            cell2.textContent = EndNode;
+            cell3.textContent = RouteNo;
+            cell4.appendChild(reservationData);
+
+            cell1.style.backgroundColor = "skyblue";
+            cell1.style.fontWeight = "bold"; // 글씨를 굵게 설정
+            cell1.style.color = "black"; // 글씨 색상을 검은색으로 설정
+            cell2.style.backgroundColor = "skyblue";
+            cell2.style.fontWeight = "bold"; // 글씨를 굵게 설정
+            cell2.style.color = "black"; // 글씨 색상을 검은색으로 설정
+            cell3.style.backgroundColor = "skyblue";
+            cell3.style.fontWeight = "bold"; // 글씨를 굵게 설정
+            cell3.style.color = "black"; // 글씨 색상을 검은색으로 설정
+
+            row.appendChild(cell1);
+            row.appendChild(cell2);
+            row.appendChild(cell3);
+            row.appendChild(cell4);
+
+            tbody.appendChild(row);
+
+
+        }
+
+        const socket = io();
+
+        function makeReservation(StartNode, EndNode, RouteNo) {
+            const reservation = {
+                Start: StartNode,
+                End: EndNode,
+                busNum: RouteNo
+            };
+
+            socket.emit('reservation', reservation);
+
+        }
+
+        function reseponse() {
+            // 예약 승인 결과 수신 처리
+            socket.on('approveReservation', (resultData) => {
+                console.log('예약이 승인되었습니다:', resultData);
+                // 승인된 예약에 대한 처리 로직을 구현
+                // 예약 완료 메시지를 표시하거나 다른 동작을 수행할 수 있습니다.
+                var success = confirm(`출발지 : ${resultData.Start}\n도착지 : ${resultData.End}\n노선 : ${resultData.busNum}\n ${resultData.result} `);
+                if (success) {
+                    const textToSpeakY = `예약이 정상적으로 처리되었습니다.`;
+
+                    // SpeechSynthesisUtterance 객체를 생성하고 텍스트를 설정합니다.
+                    var textSpeackY = new SpeechSynthesisUtterance(textToSpeakY);
+
+                    // 음성 합성을 위한 SpeechSynthesis 객체를 가져옵니다.
+                    const synth = window.speechSynthesis;
+                    synth.speak(textSpeackY);
+                    alert("저상버스를 이용해 주셔서 감사합니다.");
+                    location.href = "/";
+                } else {
+                    var textToSpeakN = `예약이 승인이 거부되었습니다.`;
+
+                    // SpeechSynthesisUtterance 객체를 생성하고 텍스트를 설정합니다.
+                    var textSpeackN = new SpeechSynthesisUtterance(textToSpeakN);
+
+                    // 음성 합성을 위한 SpeechSynthesis 객체를 가져옵니다.
+                    var synth = window.speechSynthesis;
+                    synth.speak(textSpeackN);
+
+                    alert("다시 시도하여 주세요");
+                }
+            });
+        }
+
+
+        window.onload = geolocationData;
+    </script>
+
+    <style>
+
+        @import url('https://fonts.google.com/specimen/Black+Han+Sans?subset=korean&noto.script=Kore');
+
+        p {
+            font-family: 'Black Han Sans', sans-serif;
+            color: white;
+        }
+
+        #footer_1 {
+            font-family: 'Black Han Sans', sans-serif;
+            color: white;
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 30px;
+
+        }
+    </style>
+    <style>
+        :root {
+            --font-size-lg: 5vw;
+            --font-size-md: 4vw;
+            --font-size-sm: 3vw;
+        }
+
+        h1 {
+            font-size: var(--font-size-lg);
+        }
+
+        h2 {
+            font-size: var(--font-size-md);
+        }
+
+        p {
+            font-size: var(--font-size-sm);
+        }
+
+        a {
+            font-size: var(--font-size-sm);
+        }
+
+        blockquote {
+            font-size: var(--font-size-md);
+        }
+
+        .hero {
+            font-size: var(--font-size-lg);
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+        }
+
+        .h4 {
+            text-align: center;
+        }
+
+        .center-register {
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .asd {
+            text-align: center;
+        }
+
+        .footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-top: 1px solid #444444;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border-bottom: 1px solid #444444;
+            padding: 10px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            /* 모바일 화면 크기에 대한 스타일 설정 */
+            footer {
+                height: 80px; /* 모바일에서의 높이 설정 */
+            }
+        }
+
+
+    </style>
+
+
+</head>
+<!-- body -->
+<body class="main-layout inner_page">
+<!-- loader  -->
+<div class="loader_bg">
+    <div class="loader"><img src="/images/loading.gif" alt="#"/></div>
+</div>
+<!-- end loader -->
+<!-- header -->
+<div class="header">
+    <div class="container">
+        <div class="row d_flex">
+            <div class=" col-md-2 col-sm-3 col logo_section">
+                <div class="full">
+                    <div class="center-desk">
+                        <div class="logo">
+                            <a href="/"><img src="/images/logo.png" alt="#"/></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8 col-sm-12">
+                <p>저상버스 예약 페이지</p>
+            </div>
+            </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</div>
+<!-- end header inner -->
+<!-- about -->
+<div class="about">
+
+    <!-- 웹앱의 본문 내용 -->
+    <table id="busStationTable">
+        <thead id="busStationHead">
+        <tr id="tableHead">
+            <th id='nodenm'>정류소 명</th>
+            <th id='meter'>거리</th>
+<!--            <th id='nodeId'>nodeid</th>-->
+            <th id="selectNm">정류소 선택</th>
+        </tr>
+        </thead>
+        <tbody id="busStationBody"></tbody>
+
+
+    </table>
+</div>
+<!-- end about -->
+<!--  footer -->
+<footer>
+    <div class="footer">
+        <p id="footer_1">이 페이지는 저상버스 예약을 위한 페이지 입니다.</p>
+    </div>
+</footer>
+
+<!-- end footer -->
+
+</body>
+</html>
