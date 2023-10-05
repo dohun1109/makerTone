@@ -9,7 +9,7 @@
 
 window.addEventListener('DOMContentLoaded', event => {
 
-    initializeMap()
+    
 
     // Navbar shrink function
     var navbarShrink = function () {
@@ -72,7 +72,7 @@ function showPosition(position) {
     var latitude = position.coords.latitude;
     var longitude = position.coords.longitude;
 
-    var container = document.getElementById('map');
+    var container = document.getElementById('map_1');
     var options = {
         center: new kakao.maps.LatLng(latitude, longitude),
         level: 2
