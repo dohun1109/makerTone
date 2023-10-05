@@ -57,6 +57,7 @@ window.addEventListener('DOMContentLoaded', event => {
 
 
 $('#portfolioModal1').on('show.bs.modal', function () {
+
     // 카카오맵 초기화 및 표시
     var mapContainer = document.getElementById('map');
     mapContainer.style.display = 'block'; // 카카오맵 보이기
@@ -89,6 +90,7 @@ $('#portfolioModal1').on('show.bs.modal', function () {
         });
     }
 });
+
 
 // 모달 닫히면 실행할 함수
 $('#portfolioModal1').on('hide.bs.modal', function () {
