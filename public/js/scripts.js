@@ -5,7 +5,10 @@
 */
 //
 // Scripts
-// 
+//
+
+// 페이지 로드 시 카카오 맵 초기화 실행
+// window.onload = initializeMap;
 
 window.addEventListener('DOMContentLoaded', event => {
 
@@ -57,45 +60,72 @@ window.addEventListener('DOMContentLoaded', event => {
 
 
 $('#portfolioModal1').on('show.bs.modal', function () {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition);
 
-    // 카카오맵 초기화 및 표시
-    var mapContainer = document.getElementById('map');
-    mapContainer.style.display = 'block'; // 카카오맵 보이기
+    } else {
+        alert("Geolocation is not supported by this browser.");
+    }
 
-    // 카카오맵 초기화
-    var mapOption = {
-        center: new kakao.maps.LatLng(33.450701, 126.570667), // 초기 중심 위치
-        level: 3 // 초기 확대 레벨
+
+});
+var map;
+
+function showPosition(position) {
+    var latitude = position.coords.latitude;
+    var longitude = position.coords.longitude;
+
+    var container;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // DOMContentLoaded 이벤트 핸들러 내에서 container 변수를 초기화
+        container = document.getElementById('map');
+        // 이제 'container' 요소를 조작하거나 사용할 수 있습니다.
+    });
+    
+    var options = {
+        center: new kakao.maps.LatLng(latitude, longitude),
+        level: 2
     };
 
-    var map = new kakao.maps.Map(mapContainer, mapOption); // 지도 생성
+    map = new kakao.maps.Map(container, options);
 
-    // 현재 위치 가져오기 (Geolocation API 사용)
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function (position) {
-            var lat = position.coords.latitude;
-            var lng = position.coords.longitude;
+    var markerPosition = new kakao.maps.LatLng(latitude, longitude);
+    var marker = new kakao.maps.Marker({
+        position: markerPosition
+    });
+    marker.setMap(map);
 
-            // 현재 위치 좌표
-            var currentPosition = new kakao.maps.LatLng(lat, lng);
+    var iwContent = '<div style="padding:5px;">현재 나의 위치 </div>', // 인포윈도우에 표출될 내용으로 HTML 문자열이나 document element가 가능합니다
+        iwPosition = new kakao.maps.LatLng(33.450701, 126.570667); //인포윈도우 표시 위치입니다
 
-            // 마커 생성 및 추가
-            var marker = new kakao.maps.Marker({
-                position: currentPosition,
-                map: map
-            });
+// 인포윈도우를 생성합니다
+    var infowindow = new kakao.maps.InfoWindow({
+        position : iwPosition,
+        content : iwContent
+    });
 
-            // 지도 중심 이동
-            map.setCenter(currentPosition);
-        });
-    }
-});
+// 마커 위에 인포윈도우를 표시합니다. 두번째 파라미터인 marker를 넣어주지 않으면 지도 위에 표시됩니다
+    infowindow.open(map, marker);
+
+
+
+
+}
 
 
 // 모달 닫히면 실행할 함수
 $('#portfolioModal1').on('hide.bs.modal', function () {
     // 카카오맵 정리 로직
-    var mapContainer = document.getElementById('map');
+
+    var mapContainer;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // DOMContentLoaded 이벤트 핸들러 내에서 container 변수를 초기화
+        mapContainer = document.getElementById('map');
+        // 이제 'container' 요소를 조작하거나 사용할 수 있습니다.
+    });
+
     mapContainer.style.display = 'none'; // 카카오맵 숨기기
 
     // 카카오맵 객체 해제
