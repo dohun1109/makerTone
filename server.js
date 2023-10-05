@@ -12,7 +12,6 @@ const path = require('path');
 // "public" 디렉토리에서 정적 파일 서빙
 
 // 정적 파일 경로 설정
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 
@@ -31,7 +30,7 @@ app.get('/n_Location', (req, res) => {
     res.sendFile(path.join(__dirname, 'n_Location.html'));
 });
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'main.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 
