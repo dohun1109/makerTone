@@ -17,6 +17,19 @@
     <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=6d59f528d7b8ee26eb605596fe190b25&libraries=services"></script>
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="/css/styles.css" rel="stylesheet"/>
+    <script>
+        var modal1 = document.getElementById('portfolioModal1');
+        modal1.addEventListener('show.bs.modal', function (event) {
+            var modalContent1 = modal1.querySelector('#modalContent1');
+            modalContent1.innerHTML = ''; // Clear previous content
+
+            var iframe = document.createElement('iframe');
+            iframe.src = 'n_Location.html';
+            iframe.classList.add('w-100', 'h-100', 'border-0');
+
+            modalContent1.appendChild(iframe);
+        });
+    </script>
 </head>
 
 
@@ -79,7 +92,7 @@
         <div class="row justify-content-center">
             <!-- Portfolio Item 1-->
             <div class="col-md-6 col-lg-4 mb-5">
-                <div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#portfolioModal1" onclick="initializeMap()">
+                <div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#portfolioModal1" >
                     <div class="portfolio-item-caption d-flex align-items-center justify-content-center h-100 w-100">
                         <div class="portfolio-item-caption-content text-center text-white"><i
                                 class="fas fa-plus fa-3x"></i></div>
@@ -143,48 +156,21 @@
 </div>
 <!-- Portfolio Modals-->
 <!-- Portfolio Modal 1-->
-<div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" aria-labelledby="portfolioModal1"
-     aria-hidden="true">
+<!-- 첫번째 모달 n_Location.html로 이동 -->
+<div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" aria-labelledby="portfolioModal1" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header border-0">
                 <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
-
-
-
-
             <div class="modal-body text-center pb-5">
-                <div class="container">
-                    <div class="row justify-content-center">
-                        <div class="col-lg-8">
-                            <div role="main" class="ui-content" id="map_div">
-                                <!-- 웹앱의 본문 내용 -->
-                                <div id="map_1"></div>
-                                <div id="location"></div>
-                            </div>
-
-                            <div data-role="page" id="page2">
-                                <div id="wrapper">
-                                    <br>
-                                    <p>이 지도는 현재 회원님이 계신 장소를 표시합니다. <br><br> 다음으로 버튼을 누르면 근처 500m 반경에있는 버스정류장이 표시됩니다.
-                                    </p>
-                                    <br>
-                                </div>
-                            </div>
-                            <button class="btn btn-primary" id="btnSubmit" onclick="location.href='/busStation'">계속 하기</button>
-                            <button class="btn btn-primary" data-bs-dismiss="modal">
-                                <i class="fas fa-xmark fa-fw"></i>
-                                그만하기
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <div id="modalContent1"></div>
             </div>
         </div>
     </div>
 </div>
+
+
 <!-- Portfolio Modal 2-->
 <div class="portfolio-modal modal fade" id="portfolioModal2" tabindex="-1" aria-labelledby="portfolioModal2"
      aria-hidden="true">
