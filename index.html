@@ -17,19 +17,7 @@
     <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=6d59f528d7b8ee26eb605596fe190b25&libraries=services"></script>
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="/css/styles.css" rel="stylesheet"/>
-    <script>
-        var modal1 = document.getElementById('portfolioModal1');
-        modal1.addEventListener('show.bs.modal', function (event) {
-            var modalContent1 = modal1.querySelector('#modalContent1');
-            modalContent1.innerHTML = ''; // Clear previous content
 
-            var iframe = document.createElement('iframe');
-            iframe.src = 'n_Location.html';
-            iframe.classList.add('w-100', 'h-100', 'border-0');
-
-            modalContent1.appendChild(iframe);
-        });
-    </script>
 </head>
 
 
@@ -245,5 +233,20 @@
 <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
 <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+
+
+<script>
+    var modal1 = document.getElementById('portfolioModal1');
+    modal1.addEventListener('show.bs.modal', function (event) {
+        var modalContent1 = modal1.querySelector('#modalContent1');
+        modalContent1.innerHTML = ''; // Clear previous content
+
+        var iframe = document.createElement('iframe');
+        iframe.src = 'n_Location.html';
+        iframe.classList.add('w-100', 'h-100', 'border-0');
+
+        modalContent1.appendChild(iframe);
+    });
+</script>
 </body>
 </html>
