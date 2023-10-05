@@ -26,9 +26,9 @@ app.get('/driver', (req, res) => {
 app.get('/busStation', (req, res) => {
     res.sendFile(path.join(__dirname, 'busStation.html'));
 });
-app.get('/n_Location', (req, res) => {
-    res.sendFile(path.join(__dirname, 'n_Location.html'));
-});
+// app.get('/n_Location', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'n_Location.html'));
+// });
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });

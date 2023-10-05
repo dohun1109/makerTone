@@ -1,4 +1,5 @@
-/ 위치 정보 및 카카오 맵 초기화
+
+// 위치 정보 및 카카오 맵 초기화
 function initializeMap() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(showPosition);
@@ -14,7 +15,7 @@ function showPosition(position) {
     var latitude = position.coords.latitude;
     var longitude = position.coords.longitude;
 
-    var container = document.getElementById('map');
+    var container = document.getElementById('map_kakao');
     var options = {
         center: new kakao.maps.LatLng(latitude, longitude),
         level: 2
