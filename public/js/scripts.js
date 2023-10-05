@@ -9,7 +9,7 @@
 
 window.addEventListener('DOMContentLoaded', event => {
 
-    
+
 
     // Navbar shrink function
     var navbarShrink = function () {
@@ -56,16 +56,46 @@ window.addEventListener('DOMContentLoaded', event => {
 });
 
 
+$('#portfolioModal1').on('show.bs.modal', function () {
+    // 카카오맵 초기화 및 표시
+    var mapContainer = document.getElementById('map');
+    mapContainer.style.display = 'block'; // 카카오맵 보이기
 
+    // 카카오맵 초기화
+    var mapOption = {
+        center: new kakao.maps.LatLng(33.450701, 126.570667), // 초기 중심 위치
+        level: 3 // 초기 확대 레벨
+    };
 
+    var map = new kakao.maps.Map(mapContainer, mapOption); // 지도 생성
 
+    // 현재 위치 가져오기 (Geolocation API 사용)
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
 
+            // 현재 위치 좌표
+            var currentPosition = new kakao.maps.LatLng(lat, lng);
 
+            // 마커 생성 및 추가
+            var marker = new kakao.maps.Marker({
+                position: currentPosition,
+                map: map
+            });
 
+            // 지도 중심 이동
+            map.setCenter(currentPosition);
+        });
+    }
+});
 
+// 모달 닫히면 실행할 함수
+$('#portfolioModal1').on('hide.bs.modal', function () {
+    // 카카오맵 정리 로직
+    var mapContainer = document.getElementById('map');
+    mapContainer.style.display = 'none'; // 카카오맵 숨기기
 
-
-
-
-
-
+    // 카카오맵 객체 해제
+    map = null;
+});
