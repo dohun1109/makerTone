@@ -118,13 +118,7 @@ function showPosition(position) {
 $('#portfolioModal1').on('hide.bs.modal', function () {
     // 카카오맵 정리 로직
 
-    var mapContainer;
-
-    document.addEventListener("DOMContentLoaded", function () {
-        // DOMContentLoaded 이벤트 핸들러 내에서 container 변수를 초기화
-        mapContainer = document.getElementById('map');
-        // 이제 'container' 요소를 조작하거나 사용할 수 있습니다.
-    });
+    var mapContainer  = document.getElementById('map');
 
     mapContainer.style.display = 'none'; // 카카오맵 숨기기
 
