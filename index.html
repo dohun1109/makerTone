@@ -17,7 +17,7 @@
     <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=6d59f528d7b8ee26eb605596fe190b25&libraries=services"></script>
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="/css/styles.css" rel="stylesheet"/>
-    <script src="/js/indexTmap.js"></script>
+    <script src="/js/indexTmap.js">window.onload = initializeMap </script>
 
 </head>
 
@@ -161,7 +161,7 @@
                             <div class="about">
                                 <div role="main" class="ui-content" id="map_div" >
                                     <!-- 웹앱의 본문 내용 -->
-                                    <div id="map_kakao" onload="initializeMap()"></div>
+                                    <div id="map_kakao" ></div>
                                     <div id="location"></div>
                                 </div>
                                 <div data-role="page" id="page2">
